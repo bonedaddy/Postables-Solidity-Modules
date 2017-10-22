@@ -1,6 +1,6 @@
 pragma solidity 0.4.18;
 
-contract ERC20Advanced {
+interface ERC20Advanced {
 
     event Transfer(address indexed _sender, address indexed _recipient, uint256 amount); 
     event Approval(address indexed _owner, address indexed _spender, uint256 _amount);
@@ -16,7 +16,15 @@ contract ERC20Advanced {
     function approve(address _spender, uint256 _allowance)
         public
         returns (bool _approved);
-    
+
+    function allowanceIncrease(address _spender, uint256 _amountIncrease)
+        public
+        returns (bool _increased);
+
+    function allowanceDecrease(address _spender, uint256 _amountDecrease)
+        public
+        returns (bool _decreased);
+        
     function burn(uint256 _amountBurn)
         public
         returns (bool _burned);
