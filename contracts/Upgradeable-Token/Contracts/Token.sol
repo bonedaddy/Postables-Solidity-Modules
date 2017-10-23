@@ -120,14 +120,14 @@ contract Token is Administration, SafetyControls {
         return true;
     }
 
-    function deregisterBurnAddressUser(address _burnAddress, address _user)
+    function deregisterBurnAddressUser(address _user)
         public
         isAdmin
         isBurnOwner
         isRunning
         returns (bool _burned)
     {
-        token.deregisterBurnAddressUser(_burnAddress, _user);
+        token.deregisterBurnAddressUser(_user);
         return true;
     }
 
