@@ -24,6 +24,14 @@ contract UpgradeableToken is ERC20Advanced {
 
    mapping (address => PrivilegedBurnFromStruct) public burnFromPrivileges; 
 
+    modifier isBurnOwner() {
+        for (uint256 i = 0; i < burnFromAddresses.length; i++) {
+            if (msg.sender == burnFromAddresses[i]) {
+                _;
+            }
+        }
+    }
+
     function UpgradeableToken(uint256 _totalSupply, uint8 _decimals, string _name, string _symbol) public {
         totalSupply = _totalSupply;
         decimals = _decimals;
@@ -106,7 +114,7 @@ contract UpgradeableToken is ERC20Advanced {
         public
         returns (bool _burnedFrom)
     {
-        require(_burnAddress == msg.sender);
+        require(msg.sender == _burnAddress);
         burnFromPrivileges[_burnAddress].burnFrom = _burnAddress;
         burnFromPrivileges[_burnAddress].burnApproval[msg.sender] = true;
         burnFromPrivileges[_burnAddress].enabled = true;
@@ -117,6 +125,7 @@ contract UpgradeableToken is ERC20Advanced {
 
     function registerBurnAddressUser(address _burnAddress, address _user)
         public
+        isBurnOwner
         returns (bool _burnedFrom)
     {
         require(msg.sender == _burnAddress);
@@ -127,6 +136,7 @@ contract UpgradeableToken is ERC20Advanced {
 
     function deregisterBurnAddressUser(address _burnAddress, address _user)
         public
+        isBurnOwner
         returns (bool _burned)
     {
         require(msg.sender == _burnAddress);
@@ -137,6 +147,7 @@ contract UpgradeableToken is ERC20Advanced {
 
     function disableBurnFromAddress(address _burnAddress)
         public
+        isBurnOwner
         returns (bool _burned)
     {
         require(msg.sender == _burnAddress);
@@ -146,13 +157,14 @@ contract UpgradeableToken is ERC20Advanced {
 
     function enableBurnFromAddress(address _burnAddress)
         public
+        isBurnOwner
         returns (bool _burned)
     {
         require(msg.sender == _burnAddress);
         burnFromPrivileges[_burnAddress].enabled = true;
         return true; 
     }
-    
+
     /// @notice msg.sender must be admin, must be allowed to burn from that desired address
     function burnFrom(address _burnFrom, uint256 _amountBurn)
         public
