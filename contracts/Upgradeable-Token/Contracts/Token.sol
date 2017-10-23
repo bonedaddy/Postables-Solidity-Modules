@@ -1,11 +1,11 @@
 pragma solidity 0.4.18;
 
 import '../Token-Interfaces/ERC20Lib.sol';
-import '../../../libraries/Math/SafeMath.sol';
 import '../../Administration.sol';
 import '../../SafetyControls.sol';
+import '../../../libraries/Math/SafeMath.sol';
 
-contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
+contract Token is Administration, SafetyControls {
     using SafeMath for uint256;
 
     address[]  public burnFromAddresses;
@@ -13,7 +13,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
     uint8   public decimals;
     string  public name;
     string  public symbol;
-
+    ERC20Advanced public token;
     mapping (address => uint256) public balances;
     mapping (address => bool) public burnableAddress;
     mapping (address => mapping (address => uint256)) public allowed;
@@ -26,6 +26,8 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
 
    mapping (address => PrivilegedBurnFromStruct) public burnFromPrivileges; 
 
+    event Transfer(address indexed _sender, address indexed _recipient, uint256 _uint256);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _allowed);
     modifier isBurnOwner() {
         for (uint256 i = 0; i < burnFromAddresses.length; i++) {
             if (msg.sender == burnFromAddresses[i]) {
@@ -47,11 +49,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _transferred)
     {
-        require(_amount > 0);
-        require(balances[msg.sender] >= _amount);
-        require(balances[msg.sender].sub(_amount) >= 0);
-        require(balances[_receiver].add(_amount) > balances[_receiver]);
-        balances[msg.sender] = balances[msg.sender].sub(_amount);
+        token.transfer(_receiver, _amount);
         return true;
     }
 
@@ -60,14 +58,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _transferredFrom)
     {
-        require(allowed[_owner][msg.sender] >= _amount);
-        require(allowed[_owner][msg.sender].sub(_amount) >= 0);
-        require(balances[_owner] >= _amount);
-        require(balances[_owner].add(_amount) >= 0);
-        require(balances[_recipient].add(_amount) > balances[_recipient]);
-        balances[_owner] = balances[_owner].sub(_amount);
-        balances[_recipient] = balances[_recipient].add(_amount);
-        Transfer(_owner, _recipient, _amount);
+        token.transferFrom(_owner, _recipient, _amount);
         return true;
     }
     
@@ -76,10 +67,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _approved)
     {
-        require(_allowance > 0);
-        require(allowed[msg.sender][_spender].add(_allowance) > allowed[msg.sender][_spender]);
-        allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_allowance);
-        Approval(msg.sender, _spender, _allowance);
+        token.approve(_spender, _allowance);
         return true;
     }
 
@@ -88,9 +76,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _increased)
     {
-        require(_amountIncrease > 0);
-        require(allowed[msg.sender][_spender].add(_amountIncrease) > allowed[msg.sender][_spender]);
-        allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_amountIncrease);
+        token.allowanceIncrease(_spender, _amountIncrease);
         return true;
     }
 
@@ -99,9 +85,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _decreased)
     {
-        require(_amountDecrease > 0);
-        require(allowed[msg.sender][_spender].sub(_amountDecrease) >= 0);
-        allowed[msg.sender][_spender] = allowed[msg.sender][_spender].sub(_amountDecrease);
+        token.allowanceDecrease(_spender, _amountDecrease);
         return true;
     }
 
@@ -111,11 +95,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _burned)
     {
-        require(_amountBurn > 0);
-        require(balances[msg.sender] >= _amountBurn);
-        require(balances[msg.sender].sub(_amountBurn) >= 0);
-        balances[msg.sender] = balances[msg.sender].sub(_amountBurn);
-        Transfer(msg.sender, 0, _amountBurn);
+        token.burn(_amountBurn);
         return true;
     }
     
@@ -125,12 +105,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _burnedFrom)
     {
-        require(msg.sender == _burnAddress);
-        burnFromPrivileges[_burnAddress].burnFrom = _burnAddress;
-        burnFromPrivileges[_burnAddress].burnApproval[msg.sender] = true;
-        burnFromPrivileges[_burnAddress].enabled = true;
-        burnableAddress[_burnAddress] = true;
-        burnFromAddresses.push(_burnAddress);
+        token.registerBurnAddress(_burnAddress);
         return true;
     }
 
@@ -141,9 +116,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _burnedFrom)
     {
-        require(msg.sender == _burnAddress);
-        require(_user != address(0x0));
-        burnFromPrivileges[_burnAddress].burnApproval[_user] = true;
+        token.registerBurnAddressUser(_burnAddress, _user);
         return true;
     }
 
@@ -154,9 +127,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _burned)
     {
-        require(msg.sender == _burnAddress);
-        require(msg.sender != _user);
-        burnFromPrivileges[_burnAddress].burnApproval[_user] = false;
+        token.deregisterBurnAddressUser(_burnAddress, _user);
         return true;
     }
 
@@ -167,8 +138,7 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         isRunning
         returns (bool _burned)
     {
-        require(msg.sender == _burnAddress);
-        burnFromPrivileges[_burnAddress].enabled = false;
+        token.disableBurnFromAddress(_burnAddress);
         return true;
     }
 
@@ -228,5 +198,5 @@ contract UpgradeableToken is ERC20Advanced, Administration, SafetyControls {
         return allowed[_owner][_spender];
     }
     
-  
+
 }

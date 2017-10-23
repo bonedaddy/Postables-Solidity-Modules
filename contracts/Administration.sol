@@ -21,6 +21,11 @@ contract Administration {
         owner = msg.sender;
     }
 
+    modifier isAdmin() {
+        require(msg.sender == owner || moderators[msg.sender] == true);
+        _;
+    }
+    
     modifier onlyAdmin() {
         require(msg.sender == owner || moderators[msg.sender] == true);
         _;
