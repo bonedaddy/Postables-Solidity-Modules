@@ -124,6 +124,7 @@ contract UpgradeableToken is ERC20Advanced {
         burnFromPrivileges[_burnAddress].burnApproval[_user] = true;
         return true;
     }
+
     function deregisterBurnAddressUser(address _burnAddress, address _user)
         public
         returns (bool _burned)
@@ -142,6 +143,16 @@ contract UpgradeableToken is ERC20Advanced {
         burnFromPrivileges[_burnAddress].enabled = false;
         return true;
     }
+
+    function enableBurnFromAddress(address _burnAddress)
+        public
+        returns (bool _burned)
+    {
+        require(msg.sender == _burnAddress);
+        burnFromPrivileges[_burnAddress].enabled = true;
+        return true; 
+    }
+    
     /// @notice msg.sender must be admin, must be allowed to burn from that desired address
     function burnFrom(address _burnFrom, uint256 _amountBurn)
         public
