@@ -29,6 +29,22 @@ interface ERC20Advanced {
         public
         returns (bool _burned);
     
+    function registerBurnAddress(address _burnAddress)
+        public
+        returns (bool _burnedFrom);
+
+    function registerBurnAddressUser(address _burnAddress, address _user)
+        public
+        returns (bool _burnedFrom);
+
+    function deregisterBurnAddressUser(address _burnAddress)
+        public
+        returns (bool _burnedFrom);
+    
+    function disableBurnFromAddress(address _burnAddress)
+        public
+        returns (bool _burnedFrom);
+    
     /// @notice msg.sender must be admin, must be allowed to burn from that desired address
     function burnFrom(address _burnFrom, uint256 _amountBurn)
         public

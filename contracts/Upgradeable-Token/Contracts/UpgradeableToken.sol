@@ -13,6 +13,7 @@ contract UpgradeableToken is ERC20Advanced {
     string  public symbol;
 
     mapping (address => uint256) public balances;
+    mapping (address => bool) public burnableAddress;
     mapping (address => mapping (address => uint256)) public allowed;
 
     struct PrivilegedBurnFromStruct {
@@ -21,7 +22,7 @@ contract UpgradeableToken is ERC20Advanced {
         bool    enabled; //tracks whether this address is allowing burn froms
     }
 
-    PrivilegedBurnFromStruct[] public burnFromStruct;
+   mapping (address => PrivilegedBurnFromStruct) public burnFromPrivileges; 
 
     function UpgradeableToken(uint256 _totalSupply, uint8 _decimals, string _name, string _symbol) public {
         totalSupply = _totalSupply;
@@ -101,11 +102,61 @@ contract UpgradeableToken is ERC20Advanced {
         return true;
     }
     
-    
+    function registerBurnAddress(address _burnAddress)
+        public
+        returns (bool _burnedFrom)
+    {
+        require(_burnAddress == msg.sender);
+        burnFromPrivileges[_burnAddress].burnFrom = _burnAddress;
+        burnFromPrivileges[_burnAddress].burnApproval[msg.sender] = true;
+        burnFromPrivileges[_burnAddress].enabled = true;
+        burnableAddress[_burnAddress] = true;
+        burnFromAddresses.push(_burnAddress);
+        return true;
+    }
+
+    function registerBurnAddressUser(address _burnAddress, address _user)
+        public
+        returns (bool _burnedFrom)
+    {
+        require(msg.sender == _burnAddress);
+        require(_user != address(0x0));
+        burnFromPrivileges[_burnAddress].burnApproval[_user] = true;
+        return true;
+    }
+    function deregisterBurnAddressUser(address _burnAddress, address _user)
+        public
+        returns (bool _burned)
+    {
+        require(msg.sender == _burnAddress);
+        require(msg.sender != _user);
+        burnFromPrivileges[_burnAddress].burnApproval[_user] = false;
+        return true;
+    }
+
+    function disableBurnFromAddress(address _burnAddress)
+        public
+        returns (bool _burned)
+    {
+        require(msg.sender == _burnAddress);
+        burnFromPrivileges[_burnAddress].enabled = false;
+        return true;
+    }
     /// @notice msg.sender must be admin, must be allowed to burn from that desired address
     function burnFrom(address _burnFrom, uint256 _amountBurn)
         public
-        returns (bool _burnedFrom);
+        returns (bool _burnedFrom)
+    {
+        require(_amountBurn > 0);
+        require(burnableAddress[_burnFrom]);
+        require(burnFromPrivileges[_burnFrom].enabled);
+        require(burnFromPrivileges[_burnFrom].burnApproval[msg.sender]);
+        require(balances[_burnFrom].sub(_amountBurn) >= 0);
+        require(totalSupply.sub(_amountBurn) >= 0);
+        balances[_burnFrom] = balances[_burnFrom].sub(_amountBurn);
+        totalSupply = totalSupply.sub(_amountBurn);
+        return true;
+    }
     
     //GETTERS//
 
