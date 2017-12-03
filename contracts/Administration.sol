@@ -1,33 +1,30 @@
 pragma solidity 0.4.18;
 
-/** Built-in README
-    
-    * Developers    : Postables
-    * Version       : 0.0.2alpha
-    * Notes: Used for contract adminstration, and delegation of administrative duties 
-**/
+
+/**
+    General administration contract template used as a building block for non-custom admin contracts needed by vezt
+*/
 
 contract Administration {
 
-    address     public owner;
-    
+    address     public  owner;
+    address     public  administrator;
+    bool        public  administrationContractFrozen;
+
     mapping (address => bool) public moderators;
-    mapping (address => string) privilegeStatus;
 
-    event AddMod(address indexed _invoker, address indexed _newMod, bool indexed _modAdded);
-    event RemoveMod(address indexed _invoker, address indexed _removeMod, bool indexed _modRemoved);
+    event ModeratorAdded(address indexed _invoker, address indexed _newMod, bool indexed _newModAdded);
+    event ModeratorRemoved(address indexed _invoker, address indexed _removeMod, bool indexed _modRemoved);
+    event AdministratorAdded(address indexed _invoker, address indexed _newAdmin, bool indexed _newAdminAdded);
 
-    function Administration() public {
+    function Administration() {
         owner = msg.sender;
+        administrator = msg.sender;
+        administrationContractFrozen = false;
     }
 
-    modifier isAdmin() {
-        require(msg.sender == owner || moderators[msg.sender] == true);
-        _;
-    }
-    
-    modifier onlyAdmin() {
-        require(msg.sender == owner || moderators[msg.sender] == true);
+    modifier notFrozen() {
+        require(!administrationContractFrozen);
         _;
     }
 
@@ -36,43 +33,41 @@ contract Administration {
         _;
     }
 
-    function transferOwnership(address _newOwner)
-        public
-        onlyOwner
-        returns (bool success)
-    {
+    modifier onlyAdmin() {
+        require(msg.sender == owner || msg.sender == administrator);
+        _;
+    }
+
+    modifier onlyModerator() {
+        if (msg.sender == owner) {_;}
+        if (msg.sender == administrator) {_;}
+        if (moderators[msg.sender]) {_;}
+    }
+
+    function freezeAdministrationContract() public onlyAdmin returns (bool frozen) {
+        administrationContractFrozen = true;
+        return true;
+    }
+
+    function addModerator(address _newMod) public onlyAdmin notFrozen returns (bool success) {
+        moderators[_newMod] = true;
+        ModeratorAdded(msg.sender, _newMod, true);
+        return true;
+    }
+
+    function removeModerator(address _removeMod) public onlyAdmin notFrozen returns (bool success) {
+        moderators[_removeMod] = false;
+        ModeratorRemoved(msg.sender, _removeMod, true);
+        return true;
+    }
+
+    function addAdministrator(address _administrator) public onlyOwner notFrozen returns (bool success) {
+        administrator = _administrator;
+        AdministratorAdded(msg.sender, _administrator, true);
+        return true;
+    }
+    function transferOwnership(address _newOwner) public onlyOwner notFrozen returns (bool success) {
         owner = _newOwner;
         return true;
-        
-    }
-
-    function addModerator(address _newMod)
-        public
-        onlyOwner
-        returns (bool added)
-     {
-        require(_newMod != address(0x0));
-        moderators[_newMod] = true;
-        AddMod(msg.sender, _newMod, true);
-        return true;
-    }
-    
-    function removeModerator(address _removeMod)
-        public
-        onlyOwner
-        returns (bool removed)
-    {
-        require(_removeMod != address(0x0));
-        moderators[_removeMod] = false;
-        RemoveMod(msg.sender, _removeMod, true);
-        return true;
-    }
-
-    function getRoleStatus(address _addr)
-        public
-        view  // We use view as we promise to not change state, but are reading from a state variable
-        returns (string _role)
-    {
-        return privilegeStatus[_addr];
     }
 }
