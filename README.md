@@ -11,7 +11,7 @@ Use at your own risk. Nothing in here is guaranteed to be in working order at an
 
 ## Math
 * BigInts
-* SafeMath
+* SafeMath (both signed and unsigned integer versions)
 * "Random" Number Generator
 
 ## Contract Control
