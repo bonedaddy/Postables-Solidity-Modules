@@ -10,12 +10,6 @@ contract RandomNumberGenerator {
     using SafeMath for uint256;
     
     uint256     private    seed;
-    bool        public      once;
-
-    modifier onlyOnce() {
-        require(!once);
-        _;
-    }
 
     function RandomNumberGenerator(uint256 _number, string _message) {
         seed = uint256(keccak256(msg.sender, keccak256(_message), _number, block.blockhash(block.number-1)));
