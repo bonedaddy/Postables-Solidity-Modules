@@ -7,7 +7,7 @@ Overtime I'll be building up this repository to serve as a resource for Solidity
 Use at your own risk. Nothing in here is guaranteed to be in working order at any particular point in time unless otherwise EXPLICITLY stated in the source code.
 
 # Deployed Contract
-* Random Number Generation: https://rinkeby.etherscan.io/address/0x40089cabf3587a0c4f6d7596e12d82f0ce786677#code
+* Random Number Generation (code verified and safe to use): https://rinkeby.etherscan.io/address/0x40089cabf3587a0c4f6d7596e12d82f0ce786677#code
 
 
 # Contents
