@@ -1,9 +1,6 @@
 pragma solidity 0.4.18;
 
 
-/**
-    General administration contract template used as a building block for non-custom admin contracts needed by vezt
-*/
 
 contract Administration {
 
@@ -15,7 +12,7 @@ contract Administration {
 
     event ModeratorAdded(address indexed _invoker, address indexed _newMod, bool indexed _newModAdded);
     event ModeratorRemoved(address indexed _invoker, address indexed _removeMod, bool indexed _modRemoved);
-    event AdministratorAdded(address indexed _invoker, address indexed _newAdmin, bool indexed _newAdminAdded);
+    event SetAdministrator(address indexed _invoker, address indexed _newAdmin, bool indexed _newAdminAdded);
 
     function Administration() {
         owner = msg.sender;
@@ -61,9 +58,9 @@ contract Administration {
         return true;
     }
 
-    function addAdministrator(address _administrator) public onlyOwner notFrozen returns (bool success) {
+    function setAdministrator(address _administrator) public onlyOwner notFrozen returns (bool success) {
         administrator = _administrator;
-        AdministratorAdded(msg.sender, _administrator, true);
+        SetAdministrator(msg.sender, _administrator, true);
         return true;
     }
     function transferOwnership(address _newOwner) public onlyOwner notFrozen returns (bool success) {
