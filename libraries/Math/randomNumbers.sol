@@ -5,7 +5,9 @@ import "./SafeMath.sol";
 /**
     [Title]         Random Number Generator library
     [Author]        Postables
-    [Description]   Library RNG contract, reusable seed pseudo-randomized upon usage.
+    [Description]   Library RNG contract, reusable seed pseudo-randomized upon usage
+    [Warnings]      Do not use in contracts for which the outcome of the prng would give someone an advantage over someone else
+                    -> lottery contracts, roulette, gambling contracts, and so on.
 */
 
 contract RandomNumberGenerator {
