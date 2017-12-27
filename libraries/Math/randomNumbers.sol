@@ -12,8 +12,8 @@ contract RandomNumberGenerator {
     using SafeMath for uint256;
     uint256 private seed;
 
-    function RandomNumberGenerator(string _msg, uint256 _number) {
-        seed = uint256(keccak256(_msg, msg.gas, tx.gasprice, msg.sender, _number));
+    function RandomNumberGenerator(uint256 _number) {
+        seed = uint256(keccak256(msg.gas, tx.gasprice, msg.sender, _number));
     }
 
     function getRandomNumber(uint256 _max)
