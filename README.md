@@ -15,7 +15,7 @@ Use at your own risk. Nothing in here is guaranteed to be in working order at an
 ## Math
 * BigInts
 * SafeMath (both signed and unsigned integer versions)
-* "Random" Number Generator
+* "Random" Number Generator (not intended for use in lotteries, gambling contracts, etc.. see code for more details)
 
 ## Contract Control
 * Administration (allows delegating moderators, and administrators)
