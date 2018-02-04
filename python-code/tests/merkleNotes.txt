@@ -1,0 +1,39 @@
+This document details the most basic version of a binary merkle tree, and a text description of how the merkle proof is calculated. See the accompanying merkleTest.py file for an interactive demonstration
+
+
+
+
+
+
+a = 0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb
+b = 0xb5553de315e0edf504d9150af82dafa5c4667fa618ed0a6f19c69b41166c5510
+ab = 0x5f532725975999c811ae13be41fb93a2dc961d792aabec5b07b1d961cddfded2
+
+c = 0x0b42b6393c1f53060fe3ddbfcd7aadcca894465a5a438f69c87d790b2299b9b2
+d = 0xf1918e8562236eb17adc8502332f4c9c82bc14e19bfc0aa10ab674ff75b3d2f3
+cd = 0xf2812278c73bfe791ea412701acc1697b7b14d4b50fed8c1ba7aa600d781118a
+
+
+abcd = 0xec5859a8693913943977a3f54b3b4a8ff95f8a69e7f299642bb4340f20ef2245
+
+
+        abcd
+       |    |
+      ab    cd
+     |  |  |  |
+     a  b  c  d
+
+
+
+        abcd = 0xec5859a8693913943977a3f54b3b4a8ff95f8a69e7f299642bb4340f20ef2245
+       |    |
+      ab    ?d
+     |  |  |  |
+     a  b  ?  d
+
+As per the above image, we know the hash for abcd, ab, a, b, d.
+If we are presented with a hash ? claimed to be c, we can compute the hash of cd, and
+using the known hash of ab, compute the hash abcd. If the resulting hash matches the k
+nown merkle root hash, then it is safe to assume that the hash ? which was claimed to
+be c, is indeed c.
+
